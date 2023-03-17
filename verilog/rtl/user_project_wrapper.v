@@ -14,20 +14,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `default_nettype none
-/*
- *-------------------------------------------------------------
- *
- * user_project_wrapper
- *
- * This wrapper enumerates all of the pins available to the
- * user for the user project.
- *
- * An example user project is provided in this wrapper.  The
- * example should be removed and replaced with the actual
- * user project.
- *
- *-------------------------------------------------------------
- */
+// `define MPRJ_IO_PADS 38
 
 module user_project_wrapper #(
     parameter BITS = 32
@@ -78,46 +65,87 @@ module user_project_wrapper #(
     output [2:0] user_irq
 );
 
-/*--------------------------------------*/
-/* User project is instantiated  here   */
-/*--------------------------------------*/
+////////////////////////////////////////
+   wire         clk              = user_clock2;
+   wire         w_la_rst         = la_data_in[127];
+   wire         w_la_incr        = la_data_in[126];
 
-user_proj_example mprj (
+   wire [5:0]   w_grey6;
+   assign       la_data_out[5:0]  = w_grey6;
+
+   wire         w_clk03, w_clk05, w_clk07, w_clk11, w_clk13, w_clk17, w_clk19;
+   assign       la_data_out[8]    = w_clk03;
+   assign       la_data_out[9]    = w_clk05;
+   assign       la_data_out[10]   = w_clk07;
+   assign       la_data_out[11]   = w_clk11;
+   assign       la_data_out[12]   = w_clk13;
+   assign       la_data_out[13]   = w_clk17;
+   assign       la_data_out[14]   = w_clk19;
+
+////////////////////////////////////////
+  grey_code6 m_grey_code6
+  (
 `ifdef USE_POWER_PINS
-	.vccd1(vccd1),	// User area 1 1.8V power
-	.vssd1(vssd1),	// User area 1 digital ground
+   .vccd1 ( vccd1 ),
+   .vssd1 ( vssd1 ),
+`endif
+   .clk   ( clk ),
+   .rst   ( w_la_rst ),
+   .incr  ( w_la_incr ),
+   .grey  ( w_grey6 )
+  );
+
+////////////////////////////////////////
+  ring_osc m_ring_osc
+  (
+`ifdef USE_POWER_PINS
+   .vccd1  ( vccd1 ),
+   .vssd1  ( vssd1 ),
+`endif
+   .clk_03 ( w_clk03 ),
+   .clk_05 ( w_clk05 ),
+   .clk_07 ( w_clk07 ),
+   .clk_11 ( w_clk11 ),
+   .clk_13 ( w_clk13 ),
+   .clk_17 ( w_clk17 ),
+   .clk_19 ( w_clk19 )
+  );
+
+////////////////////////////////////////
+user_code #( .BITS( BITS ) )
+m_user_code
+(
+`ifdef USE_POWER_PINS
+    inout vdda1,	// User area 1 3.3V supply
+    inout vssa1,	// User area 1 analog ground
+ .vccd1(vccd1),	// User area 1 1.8V power
+ .vssd1(vssd1),	// User area 1 digital ground
 `endif
 
-    .wb_clk_i(wb_clk_i),
-    .wb_rst_i(wb_rst_i),
+ .wb_clk_i(wb_clk_i),
+ .wb_rst_i(wb_rst_i),
+ .wbs_cyc_i(wbs_cyc_i),
+ .wbs_stb_i(wbs_stb_i),
+ .wbs_we_i(wbs_we_i),
+ .wbs_sel_i(wbs_sel_i),
+ .wbs_adr_i(wbs_adr_i),
+ .wbs_dat_i(wbs_dat_i),
+ .wbs_ack_o(wbs_ack_o),
+ .wbs_dat_o(wbs_dat_o),
 
-    // MGMT SoC Wishbone Slave
+ .la_data_in(la_data_in),
+ .la_data_out(la_data_out),
+ .la_oenb (la_oenb),
 
-    .wbs_cyc_i(wbs_cyc_i),
-    .wbs_stb_i(wbs_stb_i),
-    .wbs_we_i(wbs_we_i),
-    .wbs_sel_i(wbs_sel_i),
-    .wbs_adr_i(wbs_adr_i),
-    .wbs_dat_i(wbs_dat_i),
-    .wbs_ack_o(wbs_ack_o),
-    .wbs_dat_o(wbs_dat_o),
+ .io_in (io_in),
+ .io_out(io_out),
+ .io_oeb(io_oeb),
+ .analog_io(analog_io),
 
-    // Logic Analyzer
-
-    .la_data_in(la_data_in),
-    .la_data_out(la_data_out),
-    .la_oenb (la_oenb),
-
-    // IO Pads
-
-    .io_in (io_in),
-    .io_out(io_out),
-    .io_oeb(io_oeb),
-
-    // IRQ
-    .irq(user_irq)
+ .user_clock2(user_clock2),
+ .irq(user_irq)
 );
 
-endmodule	// user_project_wrapper
+endmodule
 
 `default_nettype wire
