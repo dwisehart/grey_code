@@ -1,12 +1,8 @@
-#include "common.svh"
+#include "common.vh"
 
 module ring_osc
 (
-`ifdef USE_POWER_PINS
- inout vccd1,	// User area 1 1.8V supply
- inout vssd1,	// User area 1 digital ground
-`endif
-
+`POWER_IN
  output        clk_03,
  output        clk_05,
  output        clk_07,

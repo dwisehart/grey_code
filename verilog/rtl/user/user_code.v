@@ -1,17 +1,11 @@
-#include "common.svh"
+#include "common.vh"
 
 module grey_code #
 (
  parameter BITS = 32
 )
 (
-`ifdef USE_POWER_PINS
- inout vdda1,	// User area 1 3.3V supply
- inout vssa1,	// User area 1 analog ground
- inout vccd1,	// User area 1 1.8V supply
- inout vssd1,	// User area 1 digital ground
-`endif
-
+ `POWER_IN
  input          wb_clk_i,
  input          wb_rst_i,
  input          wbs_stb_i,
@@ -45,21 +39,15 @@ module grey_code #
    assign      lo_data_out[5:0]  = r_grey;
 
 ////////////////////////////////////////
-   reg [7:0]    r_reset          = 'hFF;
-   wire         w_reset          = r_reset[7];
-
-   always_ff @( posedge clk )
-     if( w_la_rst )
-       r_reset     <= 'hFF;
-     else
-       r_reset     <= { r_reset, 1'b0 };
+   wire       w_rst;
+   reset m_reset( `POWER .clk( clk ), .rst( rst ), .reset( w_rst ) );
 
 ////////////////////////////////////////
    reg [3:0]    r_incr;
    wire         w_incr           = r_incr[2] & ~ r_incr[3];
 
    always_ff @( posedge clk )
-     if( w_reset )
+     if( w_rst )
        r_incr     <= 'd0;
      else
        r_incr     <= { r_incr, w_la_incr };
@@ -68,7 +56,7 @@ module grey_code #
    reg [5:0]    r_next;
 
    always_ff @( posedge clk )
-     if( w_reset )  begin
+     if( w_rst )  begin
         r_grey    <= 'd0;
         r_next    <= f_grey6( 'd0 );
      end

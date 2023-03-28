@@ -3,6 +3,29 @@
 
  `timescale 1ns/1fs
 
+ `define POWER_IN \
+   `ifdef USE_POWER_PINS \
+      inout vccd1, \
+      inout vssd1, \
+   `endif
+
+ `define POWER \
+   `ifdef USE_POWER_PINS \
+      .vccd1( .vccd1 ), \
+      .vccd2( .vccd2 ), \
+   `endif
+
+// `ifdef USE_POWER_PINS
+//     inout vdda1,	// User area 1 3.3V supply
+//     inout vdda2,	// User area 2 3.3V supply
+//     inout vssa1,	// User area 1 analog ground
+//     inout vssa2,	// User area 2 analog ground
+//     inout vccd1,	// User area 1 1.8V supply
+//     inout vccd2,	// User area 2 1.8v supply
+//     inout vssd1,	// User area 1 digital ground
+//     inout vssd2,	// User area 2 digital ground
+// `endif
+
 ////////////////////////////////////////
 ////////////////////////////////////////
    function [5:0] f_grey6( input [5:0] inp );
@@ -258,3 +281,49 @@
    endfunction
 
 `endif
+
+//  Top: user_project_wrapper
+//         grey_code6
+//           grey_code6_sync
+//             reset
+//         ring_osc
+//         user_code
+//
+//         clk_scale
+//           reset
+//           clk_mult
+//           clk_div
+//           grey_code6_sync
+//
+//         clk_div3
+//           reset
+//           grey_code6_sync
+//
+//         clk_div5
+//           reset
+//           grey_code6_sync
+//
+//         clk_div7
+//           reset
+//           grey_code6_sync
+//
+//         clk_div11
+//           reset
+//           grey_code6_sync
+//
+//         clk_div13
+//           reset
+//           grey_code6_sync
+//
+//         clk_div17
+//           reset
+//           grey_code6_sync
+//
+//         clk_div19
+//           reset
+//           grey_code6_sync
+//
+//         clk_compare
+//         grey_code6_async
+//         ring_osc
+
